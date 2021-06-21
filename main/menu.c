@@ -55,7 +55,7 @@ static bool initialized = false;
 esp_err_t menu_init(i2c_port_t port, gpio_num_t  sda, gpio_num_t scl){
     esp_err_t ret = ESP_OK;
     memset(&data, 0, sizeof(data));
-
+/*
     ret = display_init(port, sda, scl);
     if (ret == ESP_OK) {
         work_queue = xQueueCreate(WORK_QUEUE_SIZE, sizeof(work_t));
@@ -67,7 +67,7 @@ esp_err_t menu_init(i2c_port_t port, gpio_num_t  sda, gpio_num_t scl){
     } else {
         ESP_LOGE(TAG, "Failed init display");
     }
-
+*/
     return ret;
 }
 
