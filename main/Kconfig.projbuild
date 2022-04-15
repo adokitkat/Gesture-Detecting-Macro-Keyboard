@@ -39,4 +39,9 @@ menu "Gesture Detector Macro Keyboard"
         default true
         help
             Use new version two of macro keyboard.
+    config MENU_ENABLED
+        bool "Menu enabled"
+        default false
+        help 
+            Enables the menu display
 endmenu

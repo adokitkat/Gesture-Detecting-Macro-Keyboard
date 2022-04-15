@@ -14,7 +14,9 @@
 #include "hid_dev.h"
 #include "keymap_config.h"
 #include "hid_dev.h"
+#ifdef CONFIG_MENU_ENABLED
 #include "menu.h"
+#endif
 #include "keypress_input.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -26,8 +28,6 @@
 
 #include "v.h"
 
-#define SDA_PIN 21
-#define SCL_PIN 22
 #define I2C_PORT I2C_NUM_0
 
 #define CENTER_GESTURE      1 // Need to match if the model is trained with centered data or not.
@@ -89,15 +89,19 @@ void app_main(void) {
       // Never returns
       assert(false);
   }
-
-  //menu_init(I2C_PORT, CONFIG_I2C_SDA_PIN, CONFIG_I2C_SCL_PIN, CONFIG_OLED_RST_PIN);
+#ifdef CONFIG_MENU_ENABLED
+  menu_init(I2C_PORT, CONFIG_I2C_SDA_PIN, CONFIG_I2C_SCL_PIN, CONFIG_OLED_RST_PIN);
+#endif
   ble_hid_init(ble_hid_connection_callback);
   pairing_timer = xTimerCreate("BLE Pair Timeout", pdMS_TO_TICKS(30000), pdFALSE, (void*)0, disable_pairing_cb);
   init_wifi();
 
   ESP_ERROR_CHECK(tf_gesture_predictor_init());
-  
-  //xTaskCreate(periodic_update_thread, "periodic_update_thread", 4096, NULL, 10, NULL);
+
+#ifdef CONFIG_MENU_ENABLED
+  xTaskCreate(periodic_update_thread, "periodic_update_thread", 4096, NULL, 10, NULL);
+#endif
+
   int64_t start = esp_timer_get_time();
   tf_gesture_predictor_run(v_shape, sizeof(v_shape), &prediction, PRINT_GESTURE_DATA);
   printf("Prediction took %dms\n", (int)(esp_timer_get_time() - start) / 1000);
@@ -112,7 +116,9 @@ void app_main(void) {
       if (prediction.probability > 0.95f) {
         sendKeysFromGesture(prediction.label);
       }
-      //menu_draw_gestures(&prediction);
+#ifdef CONFIG_MENU_ENABLED
+      menu_draw_gestures(&prediction);
+#endif
       printf("Prediction: %s, prob: %f\n", getNameOfPrediction(prediction.label),  prediction.probability);
     } else {
       vTaskDelay(pdMS_TO_TICKS(10));
@@ -256,7 +262,9 @@ static void refresh_menu_connection_data(void) {
   snprintf(addr, sizeof(addr), "%08x%04x",\
                 (connected_ble_addr[0] << 24) + (connected_ble_addr[1] << 16) + (connected_ble_addr[2] << 8) + connected_ble_addr[3],
                 (connected_ble_addr[4] << 8) + connected_ble_addr[5]);
-  //menu_draw_connection_status(ip, addr);
+#ifdef CONFIG_MENU_ENABLED
+  menu_draw_connection_status(ip, addr);
+#endif
 }
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
@@ -267,14 +275,18 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         ESP_LOGI(TAG, "Failed to connect WiFi");
         wifi_connected = false;
         memset(&ip_addr, 0, sizeof(ip_addr));
-        //refresh_menu_connection_data();
+#ifdef CONFIG_MENU_ENABLED
+        refresh_menu_connection_data();
+#endif
         esp_wifi_connect();
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         wifi_connected = true;
         ip_addr = event->ip_info.ip;
-        //refresh_menu_connection_data();
+#ifdef CONFIG_MENU_ENABLED
+        refresh_menu_connection_data();
+#endif
     }
 }
 
@@ -284,7 +296,9 @@ static void periodic_update_thread(void* arg) {
     if (wifi_connected) {
       crypto_get_price("bitcoin", &btc, &btc_change);
       crypto_get_price("dogecoin", &doge, &doge_change);
-      //menu_draw_crypto(btc, btc_change, doge, doge_change);
+#ifdef CONFIG_MENU_ENABLED
+      menu_draw_crypto(btc, btc_change, doge, doge_change);
+#endif
     }
     vTaskDelay(pdMS_TO_TICKS(5000));
   }
@@ -294,11 +308,15 @@ static void ble_hid_connection_callback(ble_hid_connection event, esp_bd_addr_t*
   switch (event) {
     case BLE_HID_CONNECTED:
       memcpy(connected_ble_addr, addr, sizeof(esp_bd_addr_t));
-      //refresh_menu_connection_data();
+#ifdef CONFIG_MENU_ENABLED
+      refresh_menu_connection_data();
+#endif
       break;
     case BLE_HID_DISCONNECTED:
       memset(connected_ble_addr, 0, sizeof(esp_bd_addr_t));
-      //refresh_menu_connection_data();
+#ifdef CONFIG_MENU_ENABLED
+      refresh_menu_connection_data();
+#endif
       break;
     default:
       break;
