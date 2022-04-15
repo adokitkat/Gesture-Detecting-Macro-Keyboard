@@ -48,27 +48,27 @@ static void render_current_page(void);
 static void work(void* arg);
 
 static menu_data_t data;
-static xQueueHandle work_queue = NULL;
+static QueueHandle_t work_queue = NULL;
 
 static bool initialized = false;
 
 esp_err_t menu_init(i2c_port_t port, gpio_num_t  sda, gpio_num_t scl, gpio_num_t rst){
     esp_err_t ret = ESP_OK;
     memset(&data, 0, sizeof(data));
-    
+#ifdef CONFIG_MENU_ENABLED
     data.current_page = PAGE_CONNECTION;
     ret = display_init(port, sda, scl, rst);
     if (ret == ESP_OK) {
         work_queue = xQueueCreate(WORK_QUEUE_SIZE, sizeof(work_t));
         assert(work_queue != NULL);
         xTaskCreate(work, "menu_work", 4096, NULL, 10, NULL);
-        work_t* task = malloc(sizeof(work_t));
+        work_t* task = malloc(sizeof(work_t*));
         xQueueSend(work_queue, (void*)&task, (TickType_t)0);
         initialized = true;
     } else {
         ESP_LOGE(TAG, "Failed init display");
     }
-*/
+#endif
     return ret;
 }
 

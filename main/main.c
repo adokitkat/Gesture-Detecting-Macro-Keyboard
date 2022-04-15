@@ -14,9 +14,9 @@
 #include "hid_dev.h"
 #include "keymap_config.h"
 #include "hid_dev.h"
-#ifdef CONFIG_MENU_ENABLED
+//#ifdef CONFIG_MENU_ENABLED
 #include "menu.h"
-#endif
+//#endif
 #include "keypress_input.h"
 #include "esp_wifi.h"
 #include "esp_event.h"

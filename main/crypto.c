@@ -66,6 +66,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_HEADER:
         case HTTP_EVENT_ON_FINISH:
         case HTTP_EVENT_DISCONNECTED:
+        case HTTP_EVENT_REDIRECT:
             break;
         case HTTP_EVENT_ON_DATA:
             ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
@@ -76,6 +77,8 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
                 ESP_LOGE(TAG, "HTTP_EVENT_ON_DATA payload won't fit buffer, discarding...");
                 payload_length = 0;
             }
+            break;
+        default:
             break;
     }
 

@@ -37,7 +37,7 @@
 
 static uint16_t hid_conn_id = 0;
 static bool sec_conn = false;
-static xSemaphoreHandle sem_handle;
+static SemaphoreHandle_t sem_handle;
 static hid_connection_callback* connection_callback;
 static bool pairing_enabled = false;
 

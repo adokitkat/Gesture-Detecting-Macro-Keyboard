@@ -41,7 +41,7 @@ static btn_state_t buttons[NUM_BUTTONS] = {
     { .gpio_num = KEY_6_PIN, .key = KEYPAD_SWITCH_6 },
 };
 
-static xQueueHandle button_evt_queue = NULL;
+static QueueHandle_t button_evt_queue = NULL;
 static keypress_callback* pressed_callback = NULL;
 
 void keypress_input_init(void) {
